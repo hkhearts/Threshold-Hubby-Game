@@ -1,0 +1,19 @@
+{
+  "//": "Copy this file to threshold.config.json in the same folder and fill in your key. See README.md.",
+  "// apiKey": "Get one at https://physiology.presagetech.com — without it the game runs its simulated demo signal.",
+  "apiKey": "",
+  "// enableTelemetry": "Always keep false for Threshold. The SmartSpectra SDK sends telemetry by default; Threshold disables it and says so on the consent screen.",
+  "enableTelemetry": false,
+  "port": 4310,
+  "// metrics": "What the SDK measures. Threshold uses chest+abdomen breathing, breathing rate, pulse rate, the arterial pressure trace (for the keyhole rhythm), and face landmarks (for presence/stillness). HRV and EDA are intentionally skipped — their warm-up is longer than the ritual.",
+  "metrics": [
+    "CHEST_BREATHING",
+    "ABDOMEN_BREATHING",
+    "BREATHING_RATE",
+    "PULSE_RATE",
+    "ARTERIAL_PRESSURE_TRACE",
+    "FACE_LANDMARKS"
+  ],
+  "// quality": "Default capture quality for the camera bridge. The browser downscales the webcam to this before sending frames over the local WebSocket. Raise it for better pulse fidelity on a fast machine.",
+  "quality": { "width": 640, "height": 480, "fps": 20 }
+}

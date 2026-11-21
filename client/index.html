@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Threshold — your breath is the key</title>
+  <meta name="description" content="A three-minute doorway between work and home. Your pulse lights the keyhole; three long exhales turn three locks. A wellness ritual, not a medical device." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%230b0e15' stroke='%23b98a4a' stroke-width='3'/%3E%3Ccircle cx='32' cy='25' r='9' fill='none' stroke='%23b98a4a' stroke-width='4'/%3E%3Cpath d='M27 32v10a5 5 0 0 0 10 0V32' fill='none' stroke='%23b98a4a' stroke-width='4'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/build/three.module.js",
+        "three/addons/": "/vendor/addons/"
+      }
+    }
+  </script>
+</head>
+<body class="loading">
+  <canvas id="scene"></canvas>
+  <video id="cam" autoplay muted playsinline></video>
+
+  <!-- film layers -->
+  <div id="vignette" class="overlay"></div>
+  <div id="grain" class="overlay"></div>
+  <div id="letterbox" class="overlay">
+    <div class="bar top"></div>
+    <div class="bar bottom"></div>
+  </div>
+  <div id="fade" class="overlay"></div>
+
+  <div id="ui">
+    <div id="crosshair" class="hidden"></div>
+    <div id="controls-hint" class="hidden">WASD: Walk · Mouse: Look · [E]: Interact · [Space]: Exhale</div>
+    <div id="interact-prompt" class="hidden"><span class="key-badge">E</span> <span id="interact-label">Interact</span></div>
+
+    <header id="hud" class="hidden">
+      <div class="hud-left">
+        <div id="hud-act">Act I — Explore</div>
+        <div id="hud-memories" class="hud-pill">✦ Memories: 0 / 4</div>
+      </div>
+      <div id="hud-actions">
+        <button id="btn-silhouette" class="hud-btn" title="Framing check (S)">◉</button>
+        <button id="btn-audio" class="hud-btn" title="Sound (M)">♪</button>
+        <button id="btn-settings" class="hud-btn" title="Settings">⚙</button>
+        <button id="btn-debug" class="hud-btn" title="Debug overlay (D)">⛨</button>
+        <button id="btn-leave" class="hud-btn leave" title="End &amp; erase">Leave</button>
+      </div>
+    </header>
+
+    <div id="narration" class="hidden"><div id="narration-line"></div></div>
+    <div id="hint" class="hidden"><div id="hint-text"></div></div>
+
+    <div id="breath-guide" class="hidden">
+      <canvas id="breath-canvas" width="260" height="120"></canvas>
+      <div id="breath-label">breathe</div>
+    </div>
+
+    <!-- Title -->
+    <section id="screen-title" class="screen">
+      <div class="screen-inner">
+        <p class="kicker">a dreamy love story · an interactive journey</p>
+        <h1 class="title">THRESHOLD</h1>
+        <p class="tagline">Explore the dreamy world outside the door. Uncover memories of love.<br />
+          Walk with WASD &amp; look with mouse. Play mini-games with your breath to reach her.</p>
+        <div class="cta">
+          <button id="btn-begin" class="primary">Enter with Camera</button>
+          <button id="btn-demo" class="ghost">Enter in Demo Mode</button>
+        </div>
+        <p class="foot">Camera stays on this device · nothing recorded · nothing uploaded · sensor telemetry off<br />
+          Built on the SmartSpectra SDK</p>
+      </div>
+    </section>
+
+    <!-- Story Memory Modal -->
+    <section id="story-modal" class="screen hidden">
+      <div class="screen-inner card story-card">
+        <h2 id="story-title">Memory</h2>
+        <p id="story-body" class="story-text"></p>
+        <div class="cta">
+          <button id="btn-story-close" class="primary">Keep in heart [E / Esc]</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Consent -->
+    <section id="screen-consent" class="screen hidden">
+      <div class="screen-inner card">
+        <h2>Before the door</h2>
+        <ul class="consent-list">
+          <li><b>What we sense</b> — your pulse rhythm, your breathing rhythm, and whether your face is framed, from the camera, on this device only.</li>
+          <li><b>What we never do</b> — record or store video, use your microphone, upload anything, make accounts, run analytics, or show ads.</li>
+          <li><b>Sensor telemetry</b> — off. The SmartSpectra SDK’s telemetry is disabled, and we tell you so.</li>
+          <li><b>What is kept</b> — nothing. An optional souvenir — a picture of the door only — is saved solely if you ask for it.</li>
+          <li><b>Not a medical device.</b> No diagnosis, no treatment, no decisions about your health. If something feels wrong, see a doctor, not a door.</li>
+        </ul>
+        <p id="consent-mode-note" class="note hidden"></p>
+        <div class="cta">
+          <button id="btn-consent-yes" class="primary">I agree — step into the hall</button>
+          <button id="btn-consent-demo" class="ghost">I’d rather not — demo mode</button>
+        </div>
+        <button id="btn-consent-back" class="back">← back</button>
+      </div>
+    </section>
+
+    <!-- Intro skip -->
+    <section id="screen-skip" class="hidden"><button id="btn-skip">skip the walk →</button></section>
+
+    <!-- Home / epilogue -->
+    <section id="screen-home" class="screen hidden">
+      <div class="screen-inner">
+        <h1 class="title small" id="home-heading">Welcome home.</h1>
+        <p class="tagline" id="home-sub">You crossed the threshold. Nothing was stored. Nothing followed you home.</p>
+        <div class="cta">
+          <button id="btn-save-still" class="primary">Remember this door</button>
+          <button id="btn-stay" class="ghost">Stay a while</button>
+          <button id="btn-erase" class="danger">Leave &amp; erase</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Farewell -->
+    <section id="screen-farewell" class="screen hidden">
+      <div class="screen-inner">
+        <h1 class="title small">The door is closed.</h1>
+        <p class="tagline">The camera is off. The session is gone. Nothing was kept.</p>
+        <div class="cta"><button id="btn-again" class="primary">Begin again</button></div>
+      </div>
+    </section>
+
+    <!-- Settings -->
+    <section id="settings" class="screen hidden">
+      <div class="screen-inner card settings-card">
+        <h2>Settings</h2>
+        <div class="setting-row">
+          <label for="set-audio">Sound</label>
+          <input type="checkbox" id="set-audio" checked />
+        </div>
+        <div class="setting-row">
+          <label for="set-motion">Reduced motion</label>
+          <input type="checkbox" id="set-motion" />
+        </div>
+        <div class="setting-row">
+          <label for="set-silhouette">Framing silhouette <span class="dim">(privacy check)</span></label>
+          <input type="checkbox" id="set-silhouette" />
+        </div>
+        <div class="setting-row">
+          <label for="set-bloom">Glow</label>
+          <select id="set-bloom">
+            <option value="low">Low</option>
+            <option value="high" selected>High</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="set-quality">Camera quality <span class="dim">(next session)</span></label>
+          <select id="set-quality">
+            <option value="SD">SD — 480×360 @ 12</option>
+            <option value="HD" selected>HD — 640×480 @ 20</option>
+            <option value="ULTRA">Ultra — 960×540 @ 24</option>
+          </select>
+        </div>
+        <p class="note">Settings are saved on this device only.</p>
+        <button id="btn-settings-close" class="back">← back</button>
+      </div>
+    </section>
+
+    <!-- Framing silhouette -->
+    <section id="silhouette-panel" class="hidden">
+      <canvas id="silhouette-canvas" width="176" height="132"></canvas>
+      <div id="silhouette-text">framing check</div>
+    </section>
+
+    <!-- Debug overlay -->
+    <section id="debug" class="hidden">
+      <canvas id="debug-spark" width="340" height="84"></canvas>
+      <div id="debug-lines"></div>
+      <div id="debug-actions"></div>
+    </section>
+  </div>
+
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>

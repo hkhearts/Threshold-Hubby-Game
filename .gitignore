@@ -1,0 +1,4 @@
+node_modules/
+threshold.config.json
+*.log
+.DS_Store

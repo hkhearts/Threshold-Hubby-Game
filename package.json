@@ -1,0 +1,26 @@
+{
+  "name": "threshold-door-game",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Threshold — a three-minute doorway between work and home. Your breath is the key. Built on the SmartSpectra SDK.",
+  "scripts": {
+    "start": "node server/index.mjs",
+    "dev": "node --watch server/index.mjs",
+    "check": "node --check server/index.mjs && node --check server/sdk-bridge.mjs && node --check server/simulator.mjs && node --check client/js/main.js && node --check client/js/net.js && node --check client/js/framepump.js && node --check client/js/signals.js && node --check client/js/audio.js && node --check client/js/gfx/renderer.js && node --check client/js/gfx/textures.js && node --check client/js/gfx/hallway.js && node --check client/js/gfx/room.js && node --check client/js/gfx/fx.js && node --check client/js/gfx/cam.js && node --check client/js/gfx/fps.js && node --check client/js/gfx/hands.js && node --check client/js/gfx/girl.js && node --check client/js/gfx/outline.js && node --check client/js/game/cutscenes.js && node --check client/js/game/locks.js && node --check client/js/game/interactables.js && node --check client/js/game/minigames.js && node --check client/js/ui/ui.js && node --check client/js/ui/silhouettes.js && node --check client/js/ui/privacy.js",
+    "test": "npm run check && node scripts/probe.mjs && node scripts/test-client.mjs"
+  },
+  "dependencies": {
+    "@smartspectra/node-sdk": "^3.5.0",
+    "express": "^5.3.0",
+    "three": "^0.187.0",
+    "ws": "^8.23.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "allowScripts": {
+    "koffi@2.16.4": true,
+    "protobufjs@7.6.6": true
+  }
+}
